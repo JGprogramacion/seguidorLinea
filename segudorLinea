@@ -1,91 +1,92 @@
 #define ENB 11
 #define ENA 10
-int speedMotorA = 55;
-int speedMotorB = 65;
-// *** DECLARAMOS LAS VARIABLES QUE VAMOS A UTILIZAR   ***
-static int PinIN1 = 2;
-static int PinIN2 = 3;
-static int PinIN3 = 4;
-static int PinIN4 = 5; 
-static int Pin_sensor1 = 8;                       // Con este pin recogemos las señales del sensor
-static int Pin_sensor2 = 9;                       // Con este pin recogemos las señales del sensor
 
+int speedMotorA = 55;                       //Declarar variables para asignar velocidad del motor.  
+int speedMotorB = 65;
+
+int PinIN1 = 2;                             //Declarar variables para asignar pines del motor. 
+int PinIN2 = 3;
+int PinIN3 = 4;
+int PinIN4 = 5; 
+
+int Pin_sensor1 = 8;                        //Declarar pin para recibir señales del sensor IR (izquierdo).
+int Pin_sensor2 = 9;                        //Declarar pin para recibir señales del sensor IR (derecho).
+
+int value1 = 0;                             // Variable temporal que usaremos para recoger la señal del sensor izquierdo.
+int value2 = 0;                             // Variable temporal que usaremos para recoger la señal del sensor derecho.
+
+int tiempo = 20;                            //Variable tiempo como control de "antirebote"
 void setup() {
-  Serial.begin(9600);                             //iniciamos las comunicaciones con el puerto serie para el monitor serie
-  pinMode(PinIN1, OUTPUT);
-  pinMode(PinIN2, OUTPUT);
+  pinMode(PinIN1, OUTPUT);                   //Asignación de pines de motor como salidas.
+  pinMode(PinIN2, OUTPUT);                   
   pinMode(PinIN3, OUTPUT);
   pinMode(PinIN4, OUTPUT);
-  pinMode(Pin_sensor1, INPUT);                    //definimos el pin que vamos a utilizar como entrada para el sensor izquierdo
-  pinMode(Pin_sensor2, INPUT);                    //definimos el pin que vamos a utilizar como entrada para el sensor derecho
+  pinMode(Pin_sensor1, INPUT);                //Asignación de pines de IR (infrarojo) como entrada para el sensor izquierdo.
+  pinMode(Pin_sensor2, INPUT);                //Asignación de pines de IR (infrarojo) como entrada para el sensor derecho.
 
-  analogWrite(ENA, speedMotorA);
+  analogWrite(ENA, speedMotorA);              //Enviar valor con la velocidad de motor en pines analogicos 
   analogWrite(ENB, speedMotorB);
+
+  Serial.begin(9600);                         //Iniciar comunicación serial para realizar pruebas.
 }
 
 void loop() {
-  
-  int value1 = 0;                        // Variable temporal que usaremos para recoger la señal del sensor izquierdo
-  int value2 = 0;                        // Variable temporal que usaremos para recoger la señal del sensor derecho
-  value1 = digitalRead(Pin_sensor1);     // lectura digital de pin del sensor1
-  value2 = digitalRead(Pin_sensor2);     // lectura digital de pin del sensor2
+  value1 = digitalRead(Pin_sensor1);          // lectura digital de pin del sensor1
+  value2 = digitalRead(Pin_sensor2);          // lectura digital de pin del sensor2
+  delay(tiempo);
 
   if (value1 == LOW && value2 == LOW) 
   {
-    Serial.println("adelante");
     MotorAdelante();    
+    Serial.println("adelante");
   }
   
   if (value1 == HIGH && value2 == HIGH) 
   {
+    MotorStop(); 
     Serial.println("detenido");
-    MotorStop();    
   }
  
-   if (value1 == HIGH && value2 == LOW) // Si el sensor izuierdo detecta una zona oscura    
-    {
-     Serial.println("izquierda");
-     MotorIzquierda();
-    } 
+  if (value1 == HIGH && value2 == LOW){                 // Si el sensor izquierdo detecta una zona oscura  
+      MotorIzquierda();
+      Serial.println("izquierda");
+  } 
     
-   if (value2 == HIGH && value1 == LOW) // Si el sensor derecho detecta una zona oscura  
-    { 
-     Serial.println("derecha"); 
-     MotorDerecha();
+  if (value2 == HIGH && value1 == LOW)                  // Si el sensor derecho detecta una zona oscura  
+    {
+      MotorDerecha();
+      Serial.println("derecha"); 
     }
- 
-  delay(20);                             // Hacemos una pausa en milisegundos, de forma que leemos el sensor cada dicho tiempo
+  //delay(tiempo);                                      // Hacemos una pausa en milisegundos, de forma que leemos el sensor cada dicho tiempo
 }
-  
-  void MotorIzquierda()
-  {
+  void MotorIzquierda(){
   digitalWrite (PinIN1, HIGH);            // Motor Izquierdo atras
   digitalWrite (PinIN2, LOW);  
   digitalWrite (PinIN3, HIGH);            // Motor Derecho adelante
   digitalWrite (PinIN4, LOW); 
+  delay(tiempo);
   }
 
-  void MotorDerecha()
-  {
+  void MotorDerecha(){
   digitalWrite (PinIN1, LOW);             // Motor Izquierdo adelante
   digitalWrite (PinIN2, HIGH);  
   digitalWrite (PinIN3, LOW);             // Motor Derecho atras
   digitalWrite (PinIN4, HIGH);
+  delay(tiempo);
   }
 
-  void MotorAdelante()
-  {
+  void MotorAdelante(){
   digitalWrite (PinIN1, HIGH);             // Motor Izquierdo adelante
   digitalWrite (PinIN2, LOW); 
-  digitalWrite (PinIN3, LOW);            // Motor Derecho adelante
+  digitalWrite (PinIN3, LOW);             // Motor Derecho adelante
   digitalWrite (PinIN4, HIGH); 
+  delay(tiempo);
   }
 
-  void MotorStop()
-  {
+  void MotorStop(){
   digitalWrite (PinIN1, LOW);             // Motor Izquierdo detenido
   digitalWrite (PinIN2, LOW);
   digitalWrite (PinIN3, LOW);             // Motor Derecho detenido 
   digitalWrite (PinIN4, LOW);
-  
+  delay(tiempo);
   }
